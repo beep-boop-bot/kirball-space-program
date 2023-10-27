@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    		<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css">
+    		<link rel="stylesheet" type="text/css" href="./minty-modified.css">
+    </head>
+    <body style="background-color: #fce4ef;">
+        <div class="container">
+            <center>
+                <ul class="list-group" id="score">
+                </ul>
+
+                <ul class="list-group" id="next">
+                </ul>
+
+                <img id="ufo" style="width: 5%; height: auto">
+
+                <div id="world" style="padding:20px">
+
+                </div>
+
+                <span class="badge bg-primary">2</span>
+                <span class="badge bg-secondary">4</span>
+                <span class="badge bg-success">8</span>
+                <span class="badge bg-danger">16</span>
+                <span class="badge bg-warning">32</span>
+                <span class="badge bg-info">64</span>
+                <span class="badge bg-orange">128</span>
+                <span class="badge bg-indigo">256</span>
+                <span class="badge bg-cyan">512</span>
+                <span class="badge bg-purple">1024</span>
+                <span class="badge bg-blue">2048</span>
+            </center>
+        </div>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.14.2/matter.js"></script>
+		<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+        <script src="./game.js"></script>
+    </body>
+</html>

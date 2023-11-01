@@ -34,7 +34,6 @@ var render = Render.create({
 	}
 });
 
-// TODO: make the world taller and narrower
 // add walls
 Composite.add(world, [
     Bodies.rectangle(WIDTH/2, HEIGHT, HEIGHT, 50, { isStatic: true, render: { fillStyle: '#e05b8f' } }),
@@ -87,8 +86,12 @@ const updateNext = (val) => {
 // the ufo color will indicate the next ball
 // the side info will show the next next ball
 
+const getNextVal = () => {
+    return Math.floor(Math.random() * 5) + 1;
+}
+
 // show the next ball
-var val = Math.random() < 0.7 ? 1 : Math.random() < 0.5 ? 2 : 3;
+var val = getNextVal();
 updateNext(val);
 
 // update score
@@ -104,17 +107,17 @@ const updateScore = (score, highVal) => {
 }
 updateScore(score, highVal);
 
+
 // TODO: try making the box a different color than the background and the walls the same color as the background
 // maybe pink on black?
 
-// TODO: put the score, info, and next to the side
-// instead of above
-
 // add balls on spacebar
-// TODO: disable until the kirball falls all the way down
+
+var canDrop = true;
+
 var mouse = Mouse.create(render.canvas);
 document.addEventListener('keyup', (event) => {
-    if (event.code === 'Space') {
+    if (event.code === 'Space' && canDrop) {
         var ufoX = $('#ufo').offset().left-$('#world').offset().left+$('#ufo').width()/2;
         World.add(world, Bodies.circle(ufoX-5*val, 0, 10*val, { 
             render: { 
@@ -127,15 +130,15 @@ document.addEventListener('keyup', (event) => {
             },
             label: 'kirball'
         }))
-        val = Math.random() < 0.7 ? 1 : Math.random() < 0.5 ? 2 : 3;
+        val = getNextVal();
         updateNext(val);
+        canDrop = false;
+        setTimeout(() => { canDrop=true; }, 1000)
     }
 })
 render.mouse = mouse;
 
-// TODO: modify this so that it instead allows same size kirballs
-// to pass through each other for a specified timeframe, then they
-// combine and grow for a specified time frame into the next size
+// TODO: use localStorage to save high scores
 
 // combine balls on collision if they are the same size
 Events.on(engine, 'collisionStart', (event) => {
@@ -143,42 +146,40 @@ Events.on(engine, 'collisionStart', (event) => {
 
     for (var i = 0; i < pairs.length; i++) {
         var pair = pairs[i];
-        // if (pair.bodyA.render.fillStyle==pair.bodyB.render.fillStyle) {
-        if (pair.bodyA.circleRadius==pair.bodyB.circleRadius) {
-            var oldVal = pair.bodyB.circleRadius/10;
+        if (pair.bodyA.label=='kirball' && pair.bodyB.label=='kirball') {
+            if (pair.bodyA.position.y < 50 || pair.bodyB.position.y < 50) {
+                alert(`
+⠀⠀⠀⠀⠀⠀⣠⢤⠀⠀⠀⠀⣠⢤⡀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⢸⣅⣨⣇⠀⠀⠀⣇⣀⣇⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⢸⣿⣿⡷⠀⠀⠀⣿⣿⣿⠀⠀⠀⠀⠀
+⢠⠒⠀⠒⢤⠘⢯⡽⠁⠀⠀⠀⢷⣭⠇⢀⠤⠀⠠⢄
+⠈⠒⠀⠘⠊⠀⠀⠀⠈⠒⠒⠊⠀⠀⠀⠈⠂⠭⠭⠞⠀⠀⠀⠀⠀⠀⠀⠀⠀
 
-            // 1 is already the default, so shift everything up
-            pair.bodyA.collisionFilter.category = oldVal*2;
-            pair.bodyA.collisionFilter.mask = 1;
-            pair.bodyB.collisionFilter.category = oldVal*2;
-            pair.bodyB.collisionFilter.mask = 1;
-
-            if (pair.bodyA.velocity.y > pair.bodyB.velocity.y) {
-                pair.bodyA.label = 'kirballShrink';
-                pair.bodyB.label = 'kirballGrow';
-            } else {
-                pair.bodyA.label = 'kirballGrow';
-                pair.bodyB.label = 'kirballShrink';
+                GAME OVER. SCORE: ${score}
+                `);
+                runner.enabled = false;
             }
-            // World.remove(world, pair.bodyA);
-            // World.remove(world, pair.bodyB);
+        }
+        if (pair.bodyA.render.fillStyle==pair.bodyB.render.fillStyle) {
+            World.remove(world, pair.bodyA);
+            World.remove(world, pair.bodyB);
             var newVal = pair.bodyB.circleRadius/10 + 1
-            // World.add(world, Bodies.circle(
-            //         (pair.bodyA.position.x+pair.bodyB.position.x)/2,
-            //         (pair.bodyA.position.y+pair.bodyB.position.y)/2,
-            //         10*newVal,
-            //         { 
-            //             render: { 
-            //                 sprite: {
-            //                     texture: `./assets/smile_${nextDict[newVal]}.svg`,
-            //                     xScale: 0.13*newVal,
-            //                     yScale: 0.13*newVal
-            //                 }, 
-            //             fillStyle: colorsDict[newVal] 
-            //             },
-            //             label: 'kirball' 
-            //         }
-            //     ))
+            World.add(world, Bodies.circle(
+                    (pair.bodyA.position.x+pair.bodyB.position.x)/2,
+                    (pair.bodyA.position.y+pair.bodyB.position.y)/2,
+                    10*newVal,
+                    { 
+                        render: { 
+                            sprite: {
+                                texture: `./assets/agape_${nextDict[newVal]}.svg`,
+                                xScale: 0.13*newVal,
+                                yScale: 0.13*newVal
+                            }, 
+                        fillStyle: colorsDict[newVal] 
+                        },
+                        label: 'kirball' 
+                    }
+                ))
             highVal = newVal > highVal ? newVal : highVal;
             score += 2*newVal;
             updateScore(score, highVal);
@@ -187,57 +188,19 @@ Events.on(engine, 'collisionStart', (event) => {
 })
 
 Events.on(engine, 'beforeUpdate', (event) => {
-    var timeScale = (event.delta || (1000 / 60)) / 1000;
-    // var scaleRate = 0.1;
-
     for (var i = 0; i < Composite.allBodies(world).length; i++) {
-        var body = Composite.allBodies(world)[i];
+        var body = Composite.allBodies(world)[i]
         if (body.label == 'kirball') {
-            var kirballVal = Math.floor(body.circleRadius/10);
-            // Body.scale(body, 1 + (scaleRate * timeScale), 1 + (scaleRate * timeScale));
-            // body.render.sprite.xScale *= 1 + scaleRate*timeScale;
-            // body.render.sprite.yScale *= 1 + scaleRate*timeScale;
-            if (body.speed > 0.4 || body.angularSpeed > 0.03) {
+            var kirballVal = body.circleRadius/10;
+            if (body.speed > 0.3 || body.angular > 0.1) {
                 body.render.sprite.texture = `./assets/agape_${nextDict[kirballVal]}.svg`;
             }
             else {
                 body.render.sprite.texture = `./assets/smile_${nextDict[kirballVal]}.svg`;
             }
-        } else if (body.label == 'kirballShrink') {
-            var kirballVal = Math.floor(body.circleRadius/10);
-            if (kirballVal = 1) {
-                World.remove(world, body);
-                break;
-            }
-            var scaleRate = -1;
-            Body.scale(body, 1 + (scaleRate * timeScale), 1 + (scaleRate * timeScale));
-            body.render.sprite.xScale *= 1 + scaleRate*timeScale;
-            body.render.sprite.yScale *= 1 + scaleRate*timeScale;
-        } else if (body.label == 'kirballGrow') {
-            var kirballVal = Math.floor(body.circleRadius/10);
-            var scaleRate = 6;
-            Body.scale(body, 1 + (scaleRate * timeScale), 1 + (scaleRate * timeScale));
-            body.render.sprite.xScale *= 1 + scaleRate*timeScale;
-            body.render.sprite.yScale *= 1 + scaleRate*timeScale;
-            var nextKirballVal = Math.floor(body.circleRadius*(1+scaleRate*timeScale)/10);
-            if (nextKirballVal > kirballVal) {
-                body.label = 'kirball';
-                body.collisionFilter.category = 1;
-                body.collisionFilter.mask = -1;
-                body.circleRadius = nextKirballVal*10;
-            }
-            body.render.sprite.texture = `./assets/agape_${nextDict[nextKirballVal]}.svg`;
         }
     }
 })
-
-// check if the game has ended
-// TODO: use default dialog
-// and the conditions are:
-// - contact line with velocity going up
-// or stay in contact with line for a certain amount or time
-// have a line like in the sensors demo for matter js
-// 
 
 // move ufo dropper and flip it based on the direction of the mouse
 // adjust so that the walls are not at the top of the world
@@ -264,8 +227,6 @@ $(document).mousemove(function(e) {
 // TODO: add sound effects
 // should be the same sound effect for combinations, but change in tone for combos
 // TODO: play around with friction
-
-// TODO: update the probabilities for the next kirball
 
 // run engine and renderer
 var runner = Engine.run(engine);

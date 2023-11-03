@@ -73,10 +73,13 @@ const nextDict = {
 
 const updateNext = (val) => {
     $('#next').html(
-        `<li class="list-group-item list-group-item-${nextDict[val]} d-flex justify-content-between align-items-center">
-            ネクスト
-            <span class="badge bg-${nextDict[val]} rounded-pill">${2**val}</span>
-        </li>`
+        `<div class="card text-white bg-${nextDict[val]} mb-3" style="max-width: 20rem;">
+            <div class="card-header">ネクスト</div>
+            <div class="card-body">
+                <img src="./assets/smile_${nextDict[val]}.svg" style="height: auto; width: ${0.13*val*55}%">
+            </div>
+        </div>
+        `
     );
     $('#ufo').attr('src', `./assets/ufo_${nextDict[val]}.svg`);
 }
@@ -101,12 +104,32 @@ const updateScore = (score, highVal) => {
     $('#score').html(
         `<li class="list-group-item list-group-item-${nextDict[highVal]} d-flex justify-content-between align-items-center">
             スコア
-            <span class="badge bg-${nextDict[highVal]} rounded-pill">${score}</span>
+            <button type="button" class="btn btn-${nextDict[highVal]} btn-lg" disabled>${score}</button>
         </li>`
     )
 }
 updateScore(score, highVal);
 
+const updateHighScores = (currHigh) => {
+    var pastFirst = parseInt(localStorage.getItem("first")) || 0;
+    var pastSecond = parseInt(localStorage.getItem("second")) || 0;
+    var pastThird = parseInt(localStorage.getItem("third")) || 0;
+    var highs = [pastFirst, pastSecond, pastThird, currHigh];
+    highs.sort((a, b) => b - a);
+    $('#high').html(
+        `<div class="card text-white bg-primary mb-3" style="max-width: 20rem;">
+            <div class="card-header">ハイスコア</div>
+            <div class="card-body">
+                1: <button type="button" class="btn btn-blue">${highs[0]}</button>
+                <br>
+                2: <button type="button" class="btn btn-purple">${highs[1]}</button>
+                <br>
+                3: <button type="button" class="btn btn-cyan">${highs[2]}</button>
+            </div>
+        </div>`
+    );
+} 
+updateHighScores(score);
 
 // TODO: try making the box a different color than the background and the walls the same color as the background
 // maybe pink on black?
@@ -138,8 +161,6 @@ document.addEventListener('keyup', (event) => {
 })
 render.mouse = mouse;
 
-// TODO: use localStorage to save high scores
-
 // combine balls on collision if they are the same size
 Events.on(engine, 'collisionStart', (event) => {
     var pairs = event.pairs;
@@ -155,9 +176,22 @@ Events.on(engine, 'collisionStart', (event) => {
 ⢠⠒⠀⠒⢤⠘⢯⡽⠁⠀⠀⠀⢷⣭⠇⢀⠤⠀⠠⢄
 ⠈⠒⠀⠘⠊⠀⠀⠀⠈⠒⠒⠊⠀⠀⠀⠈⠂⠭⠭⠞⠀⠀⠀⠀⠀⠀⠀⠀⠀
 
-                GAME OVER. SCORE: ${score}
+                ゲームオーバー！ スコア：${score}
                 `);
                 runner.enabled = false;
+                if (score > localStorage.getItem("first")) {
+                    localStorage.setItem("third", localStorage.getItem("second"));
+                    localStorage.setItem("second", localStorage.getItem("first"));
+                    localStorage.setItem("first", score.toString());
+                } else if (score > localStorage.getItem("second")) {
+                    localStorage.setItem("third", localStorage.getItem("second"));
+                    localStorage.setItem("second", score.toString());
+                } else if (score > localStorage.getItem("third")) {
+                    localStorage.setItem("third", score.toString())
+                }
+                $("#retry").html(
+                    `<button type="button" class="btn btn-warning btn-lg" onClick="window.location.reload()">↻</button>`
+                )
             }
         }
         if (pair.bodyA.render.fillStyle==pair.bodyB.render.fillStyle) {
@@ -183,6 +217,7 @@ Events.on(engine, 'collisionStart', (event) => {
             highVal = newVal > highVal ? newVal : highVal;
             score += 2*newVal;
             updateScore(score, highVal);
+            updateHighScores(score);
         }
     }
 })

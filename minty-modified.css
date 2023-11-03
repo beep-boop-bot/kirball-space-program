@@ -2867,6 +2867,36 @@ fieldset:disabled a.btn {
   box-shadow: 0 0 0 0.2rem rgba(82, 88, 93, 0.5);
 }
 
+.btn-orange {
+  color: #fff;
+  background-color: #fd7e14;
+  border-color: #fd6e14;
+}
+
+.btn-indigo {
+  color: #fff;
+  background-color: #6610f2;
+  border-color: #6610f2;
+}
+
+.btn-cyan {
+  color: #fff;
+  background-color: #6cc3d5;
+  border-color: #6cc3d5;
+}
+
+.btn-purple {
+  color: #fff;
+  background-color: #6f42c1;
+  border-color: #6f42c1;
+}
+
+.btn-blue {
+  color: #fff;
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
 .btn-outline-primary {
   color: #78c2ad;
   border-color: #78c2ad;
